@@ -1,0 +1,37 @@
+{
+  "name": "stackbp-nodejs",
+  "version": "1.0.0",
+  "description": "Curso nodejs con notas adicionales",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "standard",
+    "lint:fix": "standard --fix"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bpstack/curso-node-js-main.git"
+  },
+  "keywords": [
+    "curso",
+    "node",
+    "nodejs",
+    "stackbp"
+  ],
+  "author": "Salvador Pérez Rodríguez - stackbp",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bpstack/curso-node-js-main/issues"
+  },
+  "homepage": "https://github.com/bpstack/curso-node-js-main#readme",
+  "dependencies": {
+    "picocolors": "1.1.1"
+  },
+  "devDependencies": {
+    "standard": "17.1.2"
+  },
+  "eslintConfig": {
+    "extends": "standard"
+  }
+}
+
