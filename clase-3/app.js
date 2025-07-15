@@ -1,3 +1,4 @@
+/* eslint-disable comma-dangle */
 const express = require('express') // require -> CommonJS
 const crypto = require('node:crypto')
 const movies = require('./movies.json')
@@ -21,19 +22,21 @@ app.get('/movies', (req, res) => {
   let filteredMovies = movies
 
   if (genre) {
-    filteredMovies = filteredMovies.filter(
-      movie => movie.genre.some(g => g.toLowerCase() === genre.toLowerCase())
+    filteredMovies = filteredMovies.filter((movie) =>
+      movie.genre.some((g) => g.toLowerCase() === genre.toLowerCase())
     )
   }
 
   if (search) {
-    filteredMovies = filteredMovies.filter(
-      movie => movie.title.toLowerCase().includes(search.toLowerCase())
+    filteredMovies = filteredMovies.filter((movie) =>
+      movie.title.toLowerCase().includes(search.toLowerCase())
     )
   }
 
   if (filteredMovies.length === 0) {
-    return res.status(404).json({ error: 'So sorry sir, we can not find that movies dude!' })
+    return res
+      .status(404)
+      .json({ error: 'So sorry sir, we can not find that movies dude!' })
   }
 
   res.json(filteredMovies)
@@ -42,7 +45,7 @@ app.get('/movies', (req, res) => {
 // Pedimos una pelicula en concreto por id
 app.get('/movies/:id', (req, res) => {
   const { id } = req.params
-  const movie = movies.find(movie => movie.id === id)
+  const movie = movies.find((movie) => movie.id === id)
   if (movie) return res.json(movie)
 
   res.status(404).json({ message: 'Movie not found' })
@@ -60,7 +63,7 @@ app.post('/movies', (req, res) => {
   // en base de datos
   const newMovie = {
     id: crypto.randomUUID(), // uuid v4
-    ...result.data // - no es lo mismo que result.body MAL
+    ...result.data, // - no es lo mismo que result.body MAL
   }
 
   // Esto no sería REST, porque estamos guardando
@@ -72,7 +75,7 @@ app.post('/movies', (req, res) => {
 
 app.delete('/movies/:id', (req, res) => {
   const { id } = req.params
-  const movieIndex = movies.findIndex(movie => movie.id === id)
+  const movieIndex = movies.findIndex((movie) => movie.id === id)
 
   if (movieIndex === -1) {
     return res.status(404).json({ message: 'Movie not found' })
@@ -91,7 +94,7 @@ app.patch('/movies/:id', (req, res) => {
   }
 
   const { id } = req.params
-  const movieIndex = movies.findIndex(movie => movie.id === id)
+  const movieIndex = movies.findIndex((movie) => movie.id === id)
 
   if (movieIndex === -1) {
     return res.status(404).json({ message: 'Movie not found' })
@@ -99,7 +102,7 @@ app.patch('/movies/:id', (req, res) => {
 
   const updateMovie = {
     ...movies[movieIndex],
-    ...result.data
+    ...result.data,
   }
 
   movies[movieIndex] = updateMovie
