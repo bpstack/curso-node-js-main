@@ -1,16 +1,35 @@
 /* eslint-disable camelcase */
 import mysql from 'mysql2/promise'
+import dotenv from 'dotenv'
 
-const DEFAULT_CONFIG = {
-  host: 'localhost',
-  user: 'root',
-  port: 3306,
-  password: '987987',
-  database: 'hotel_db',
+dotenv.config()
+
+// const DEFAULT_CONFIG = {
+//   host: 'localhost',
+//   user: 'root',
+//   port: 3306,
+//   password: 'XXXXXX', // Aqui realmente tenía mi pw visible, no es buena práctica
+//   database: 'hotel_db',
+// }
+
+// const connectionString = process.env.DATABASE_URL ?? DEFAULT_CONFIG
+// const connection = await mysql.createConnection(connectionString)
+
+// Configuración mínima sin valores por defecto de contraseña
+const config = {
+  host: process.env.DB_HOST || 'localhost',
+  user: process.env.DB_USER || 'root',
+  port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 3306,
+  password: process.env.DB_PASSWORD, // no poner valor por defecto aquí
+  database: process.env.DB_NAME || 'hotel_db',
 }
 
-const connectionString = process.env.DATABASE_URL ?? DEFAULT_CONFIG
-const connection = await mysql.createConnection(connectionString)
+// Validar que la contraseña esté definida
+if (!config.password) {
+  throw new Error('La variable de entorno DB_PASSWORD no está definida')
+}
+
+const connection = await mysql.createConnection(config)
 
 export class UserModel {
   static async getAll({ role } = {}) {
