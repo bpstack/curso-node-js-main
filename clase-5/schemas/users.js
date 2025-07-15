@@ -5,14 +5,10 @@ const userSchema = z.object({
     required_error: 'Name is required',
     invalid_type_error: 'Name must be a string',
   }),
-  email: z.string().email({
-    message: 'Invalid email address',
-  }),
-  created_at: z.string().optional(),
+  email: z.string().email({ message: 'Invalid email address' }),
+  created_at: z.string().optional(), // validamos solo si se envía
   is_active: z.boolean().optional(),
-  role: z.string({
-    required_error: 'Role is required',
-  }),
+  role: z.string({ required_error: 'Role is required' }),
 })
 
 export function validateUser(input) {

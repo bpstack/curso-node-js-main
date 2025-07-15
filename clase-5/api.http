@@ -35,6 +35,8 @@ Content-Type: application/json
   "year": 2022
 }
 
+###########################################################
+
 ### RECUPERAR TODOS LOS USUARIOS
 GET http://localhost:1234/users
 
@@ -45,7 +47,7 @@ Content-Type: application/json
 {
   "name": "David",
   "created_at": "",
-  "email": "malaga@easyhotel.com",
+  "email": "malaga2@easyhotel.com",
   "is_active": true,
   "role": "recepcionist"
 }

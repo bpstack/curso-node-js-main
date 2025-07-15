@@ -26,9 +26,9 @@ export class UserModel {
 
       const [users] = await connection.query(
         `SELECT BIN_TO_UUID(u.id) id, u.name, u.created_at, u.email, u.is_active, u.updated_at
-         FROM users u
-         JOIN user_role ur ON u.id = ur.user_id
-         WHERE ur.role_id = ?;`,
+        FROM users u
+        JOIN user_role ur ON u.id = ur.user_id
+        WHERE ur.role_id = ?;`,
         [roleId]
       )
 
@@ -44,7 +44,7 @@ export class UserModel {
   static async getById(id) {
     const [users] = await connection.query(
       `SELECT BIN_TO_UUID(id) id, name, created_at, email, is_active, updated_at
-       FROM users WHERE id = UUID_TO_BIN(?);`,
+      FROM users WHERE id = UUID_TO_BIN(?);`,
       [id]
     )
 
@@ -58,11 +58,17 @@ export class UserModel {
     const [uuidResult] = await connection.query('SELECT UUID() uuid;')
     const [{ uuid }] = uuidResult
 
+    // 🛠️ Preparamos una fecha válida o usamos la actual
+    const createdAtValue =
+      created_at && created_at.trim()
+        ? new Date(created_at).toISOString().slice(0, 19).replace('T', ' ')
+        : new Date().toISOString().slice(0, 19).replace('T', ' ')
+
     try {
       await connection.query(
         `INSERT INTO users (id, name, created_at, email, is_active)
-        VALUES (UUID_TO_BIN(?), ?, ?, ?, ?);`,
-        [uuid, name, created_at, email, is_active]
+          VALUES (UUID_TO_BIN(?), ?, ?, ?, ?);`,
+        [uuid, name, createdAtValue, email, is_active]
       )
 
       const [roles] = await connection.query(
@@ -81,14 +87,14 @@ export class UserModel {
 
       const [user] = await connection.query(
         `SELECT BIN_TO_UUID(id) id, name, created_at, email, is_active, updated_at
-         FROM users WHERE id = UUID_TO_BIN(?);`,
+          FROM users WHERE id = UUID_TO_BIN(?);`,
         [uuid]
       )
 
       return user[0]
     } catch (err) {
       console.error('💥 DB error in create user:', err)
-      throw err
+      throw new Error('Error creating user')
     }
   }
 

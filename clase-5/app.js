@@ -11,7 +11,7 @@ app.use(corsMiddleware())
 
 app.disable('x-powered-by')
 
-const ROUTER_TO_USE = 'users' // Cambia a 'movies' para usar moviesRouter
+const ROUTER_TO_USE = 'users' // Cambia a 'movies' o 'users' según sea necesario
 
 if (ROUTER_TO_USE === 'users') {
   app.use('/users', usersRouter)
