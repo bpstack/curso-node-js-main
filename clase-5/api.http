@@ -47,11 +47,14 @@ Content-Type: application/json
 {
   "name": "David",
   "created_at": "",
-  "email": "malaga2@easyhotel.com",
+  "email": "malaga@easyhotel.com",
   "is_active": true,
   "role": "recepcionist"
 }
 
 ### RECUPERAR UN USUARIO POR ID
 GET http://localhost:1234/users/e7475bf9-6108-11f0-a709-d8bbc147dfea
+
+### BORRAR UN USUARIO
+DELETE http://localhost:1234/users/61a26e3c-6160-11f0-8c14-d8bbc147dfea
 
