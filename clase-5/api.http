@@ -56,5 +56,5 @@ Content-Type: application/json
 GET http://localhost:1234/users/e7475bf9-6108-11f0-a709-d8bbc147dfea
 
 ### BORRAR UN USUARIO
-DELETE http://localhost:1234/users/61a26e3c-6160-11f0-8c14-d8bbc147dfea
+DELETE http://localhost:1234/users/e83ca91b-6235-11f0-a96c-d8bbc147dfea
 

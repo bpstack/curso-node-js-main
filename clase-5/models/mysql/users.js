@@ -112,7 +112,7 @@ export class UserModel {
 
       return user[0]
     } catch (err) {
-      console.error('💥 DB error in create user:', err)
+      console.error('DB error in create user:', err)
       throw new Error('Error creating user')
     }
   }
