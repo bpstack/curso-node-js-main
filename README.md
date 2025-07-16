@@ -6,6 +6,7 @@
 
 Curso para aprender **Node** de forma práctica
 **[Todos los jueves a las 18PM 🇪🇸 en Twitch](https://twitch.tv/midudev)**
+
 </div>
 
 ## 📹 Videos con las clases
@@ -15,6 +16,7 @@ Curso para aprender **Node** de forma práctica
 - 03: [Solución de CORS y desarrollo de API](https://www.youtube.com/watch?v=-9d3KhCqOtU)
 - 04: [Arquitectura MVC y despligue de API](https://www.youtube.com/watch?v=ev3Yxva4wI4)
 - 05: [Crea un Base de Datos MySQL y evita los hackers (buenas prácticas)](https://www.youtube.com/watch?v=eCWNQfzuuso&list=RDCMUC3aj05GEEyzdOqYM5FLSFeg&index=3)
+- 05-extra: [Extra added by stackbp, just DI (dependency injection) as pattern desing](nothing)
 - 06: [Chat en TIEMPO REAL con Node.js, Socket.io, SQL, HTML y CSS](https://www.youtube.com/watch?v=WpbBhTx5R9Q&list=PLUofhDIg_38qm2oPOV-IRTTEKyrVBBaU7&index=6)
 - 07: [Aprende Autenticación de Usuario, Sesión, Cookies y JWT con Node.js](https://www.youtube.com/watch?v=UqnnhAZxRac&list=PLUofhDIg_38qm2oPOV-IRTTEKyrVBBaU7&index=7)
 
