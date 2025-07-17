@@ -2,11 +2,17 @@
 import { Router } from 'express'
 import { UserController } from '../controllers/users.js'
 
-export const usersRouter = Router()
+export const createUserRouter = ({ userModel }) => {
+  const usersRouter = Router()
 
-usersRouter.get('/', UserController.getAll)
-usersRouter.post('/', UserController.create)
+  const userController = new UserController({ userModel })
 
-usersRouter.get('/:id', UserController.getById)
-usersRouter.delete('/:id', UserController.delete)
-usersRouter.patch('/:id', UserController.update)
+  usersRouter.get('/', userController.getAll)
+  usersRouter.post('/', userController.create)
+
+  usersRouter.get('/:id', userController.getById)
+  usersRouter.delete('/:id', userController.delete)
+  usersRouter.patch('/:id', userController.update)
+
+  return usersRouter
+}

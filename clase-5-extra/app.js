@@ -2,8 +2,9 @@ import express, { json } from 'express'
 import { corsMiddleware } from './middlewares/cors.js'
 
 import { createMovieRouter } from './routes/movies.js'
-import { MovieModel } from './models/local-file-system/movie.js' // Cuidado con esto porque el archivo se llama movie.js NO ES MOVIES.JS xd
-import { usersRouter } from './routes/users.js'
+import { MovieModel } from './models/local-file-system/movie.js'
+import { UserModel } from './models/mysql/users.js'
+import { createUserRouter } from './routes/users.js'
 
 const app = express()
 
@@ -25,7 +26,7 @@ app.disable('x-powered-by')
 // }
 
 app.use('/movies', createMovieRouter({ movieModel: MovieModel }))
-app.use('/users', usersRouter)
+app.use('/users', createUserRouter({ userModel: UserModel }))
 
 const PORT = process.env.PORT ?? 1234
 app.listen(PORT, () => {
