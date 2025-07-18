@@ -1,2 +1,4 @@
+# Esto es REST Client, para probar la API REST cuando no tienes el frontend. Se puede usar Yaak, Postman, etc.
+
 ### login
 POST http://localhost:3000/login

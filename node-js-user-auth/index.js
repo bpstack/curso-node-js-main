@@ -1,13 +1,13 @@
 import express from 'express' // Importar la dependencia, la herramienta que vamos a usar
-import { PORT } from './config.js' // Importar la configuración del puerto desde el archivo config.js. Esta manera es más moderna y permite usar variables de entorno fácilmente
+import { PORT } from './config/config.js' // Importar la configuración del puerto desde el archivo config.js. Esta manera es más moderna y permite usar variables de entorno fácilmente
 const app = express() // crear la aplicación, una instancia de express
 
-//const PORT = process.env.PORT ?? 3000 // Definir el puerto en el que va a correr la aplicación, si no hay una variable de entorno PORT, usar 3000. // Lo hemos comentado porque ahora usamos config.js e importamos el puerto desde allí
+// const PORT = process.env.PORT ?? 3000 // Definir el puerto en el que va a correr la aplicación, si no hay una variable de entorno PORT, usar 3000. // Lo hemos comentado porque ahora usamos config.js e importamos el puerto desde allí
 
 app.get('/', (req, res) => {
   // Definir una ruta, en este caso la raíz del sitio
   // req es el objeto de la petición, res es el objeto de la respuesta
-  res.send('Hello Bori proDEV!') // Enviar una respuesta al cliente, en este caso un texto
+  res.send('Hello Bori') // Enviar una respuesta al cliente, en este caso un texto
 })
 
 app.post('/login', (req, res) => {})
