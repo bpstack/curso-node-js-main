@@ -20,7 +20,6 @@ app.get('/', (req, res) => {
 app.post('/login', (req, res) => {})
 
 app.post('/register', async (req, res) => {
-  console.log('REQ BODY:', req.body) // 👈 añade esto para depurar
   // 1. Validar entrada
   const validationResult = validateUser(req.body)
   if (!validationResult.success) {
