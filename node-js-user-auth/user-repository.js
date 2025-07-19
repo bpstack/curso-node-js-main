@@ -74,10 +74,119 @@ export class UserRepository {
   // La columna password debería existir en tu tabla.
 
   static login({ username, password }) {}
-  static logout({ username, password }) {}
+  static logout({ username }) {}
   static findAll() {}
   static findById(id) {}
   static findByUsername(username) {}
-  static update(id, { username, password }) {}
+  static update() {}
   static delete(id) {}
 }
+
+// ### 🔐 `login({ username, password })`
+
+// * **Sí**, lo más común es usar `username` y `password` en el login.
+// * Puedes validar así:
+
+//   1. Buscar al usuario por `username`.
+//   2. Comparar la contraseña con `bcrypt.compare()`.
+//   3. Si es correcta, devolver los datos del usuario (sin contraseña) o generar un token (si usas JWT más adelante).
+
+// ---
+
+// ### 🔓 `logout({ username })` o `logout({ id })`
+
+// * Si manejas **tokens (como JWT)**, el logout se hace del lado del cliente o invalidando el token. (los voy a usar JWT)
+// * Si usas sesiones, puedes usar `id` o `username` según cómo identifiques al usuario.
+// * **Recomendado:** usa `id`, es más específico y no cambia.
+
+// ---
+
+// ### 📋 `findAll()`
+
+// * **Sí es útil.** Devuelve la lista de todos los usuarios.
+// * Lo usarías, por ejemplo, en:
+
+//   * Un panel de administración.
+//   * Un dashboard para ver registros.
+// * Normalmente devuelves: `id`, `username`, `email`, `created_at`, `is_active` (sin password).
+// * Puedes incluir el `role` con un `JOIN`.
+
+// ---
+
+// ### 🔎 `findById(id)`
+
+// * **Sí es necesario.**
+// * Útil para:
+
+//   * Obtener los detalles de un usuario específico.
+//   * Mostrar su perfil.
+// * Más seguro que usar `username` porque el `id` no cambia y es único.
+
+// ---
+
+// ### 🔎 `findByUsername(username)`
+
+// * Útil **solo si necesitas buscar al usuario por nombre**.
+// * Puede ser útil en:
+
+//   * Búsqueda por parte de admins.
+//   * Sistemas donde el `username` es clave principal.
+// * Si no lo usas, puedes omitirlo, pero no está de más tenerlo. (esto es clave)
+
+// ---
+
+// ### ✏️ `update({ id, fields })`
+
+// * **Sí, lo necesitas.**
+// * Útil para actualizar:
+
+//   * `username`
+//   * `email`
+//   * `role`
+//   * `is_active`
+//   * etc.
+
+// **Forma flexible (recomendada):**
+
+// ```js
+// static async update(id, fields) {
+//   const updates = []
+//   const values = []
+
+//   for (const [key, value] of Object.entries(fields)) {
+//     updates.push(`${key} = ?`)
+//     values.push(value)
+//   }
+
+//   values.push(id)
+
+//   const sql = `UPDATE users SET ${updates.join(', ')} WHERE id = UUID_TO_BIN(?)`
+//   await pool.query(sql, values)
+// }
+// ```
+
+// Así puedes hacer:
+
+// ```js
+// await UserRepository.update(userId, { username: 'nuevoNombre', email: 'nuevo@mail.com' })
+// ```
+
+// ---
+
+// ### 🗑️ `delete(id)`
+
+// * **Sí, lo necesitas.**
+// * Borra un usuario por su `id`.
+// * Ojo: puedes hacer soft delete (marcar `is_active = 0`) en vez de eliminar de verdad, si prefieres.
+
+// Ejemplo básico:
+
+// ```js
+// static async delete(id) {
+//   await pool.query('DELETE FROM users WHERE id = UUID_TO_BIN(?)', [id])
+// }
+// ```
+
+// ---
+
+// ¿Quieres que te escriba el código completo para alguna de estas funciones (`login`, `findAll`, `update`, etc.) ahora?
