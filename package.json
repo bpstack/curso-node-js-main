@@ -27,7 +27,6 @@
   },
   "homepage": "https://github.com/bpstack/curso-node-js-main#readme",
   "dependencies": {
-    "all": "^0.0.0",
     "express": "5.1.0",
     "picocolors": "1.1.1"
   },
