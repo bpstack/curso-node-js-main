@@ -11,10 +11,10 @@ import {
 
 app.use(express.json()) // Middleware para parsear el cuerpo de las peticiones como JSON, así podemos recibir datos en formato JSON en las peticiones POST. Es decir, el req.body es undefined, EXPRESS por defecto no lo "tramita".
 
+app.set('view engine', 'ejs') // Configurar el motor de vistas, en este caso ejs
+
 app.get('/', (req, res) => {
-  // Definir una ruta, en este caso la raíz del sitio
-  // req es el objeto de la petición, res es el objeto de la respuesta
-  res.send('Hello Bori') // Enviar una respuesta al cliente, en este caso un texto
+  res.render('index')
 })
 
 app.post('/login', (req, res) => {})
@@ -40,7 +40,7 @@ app.post('/register', async (req, res) => {
     })
 
     // 3. Responder con éxito, sin la password
-    return res.status(201).json({ user })
+    return res.status(201).json({ success: true, user })
   } catch (error) {
     // 4. Manejar errores (como username duplicado)
     if (

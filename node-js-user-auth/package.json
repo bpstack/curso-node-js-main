@@ -1,6 +1,7 @@
 {
   "name": "node-js-user-auth",
   "version": "1.0.0",
+  "type": "module",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -14,6 +15,7 @@
   "dependencies": {
     "bcrypt": "6.0.0",
     "dotenv": "17.2.0",
+    "ejs": "3.1.10",
     "express": "5.1.0",
     "mysql2": "3.14.2",
     "zod": "4.0.5"

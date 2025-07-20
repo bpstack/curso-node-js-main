@@ -13,6 +13,7 @@ const userSchema = z.object({
     .email('Invalid email address')
     .nonempty('Email is required'),
   password: z.string().min(6, 'Password must be at least 6 characters long'),
+  role: z.string().optional(),
 })
 
 // Validación completa para creación de usuario

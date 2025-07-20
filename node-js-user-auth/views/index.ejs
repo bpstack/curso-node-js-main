@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login y Registro</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body, html { height: 100%; font-family: 'Space Grotesk', sans-serif, Tahoma, Geneva, Verdana; background: #f0f2f5; display: flex; justify-content: center; align-items: center; }
+    .container { display: flex; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 12px 25px rgba(0,0,0,0.1); max-width: 400px; width: 100%; flex-direction: column; gap: 20px; }
+    .card { background: #ffffff; border-radius: 10px; box-shadow: 0 8px 15px rgba(0,0,0,0.1); padding: 30px 40px; display: flex; flex-direction: column; }
+    h2 { margin-bottom: 20px; color: #333; text-align: center; font-weight: 700; font-size: 26px; }
+    form { display: flex; flex-direction: column; }
+    label { margin-bottom: 6px; font-weight: 600; color: #555; }
+    input[type="text"], input[type="email"], input[type="password"] {
+      padding: 12px 14px; margin-bottom: 15px; border: 1.8px solid #ccc;
+      border-radius: 6px; font-size: 15px; transition: border-color 0.3s ease;
+    }
+    input:focus { border-color: #4a90e2; outline: none; }
+    button {
+      padding: 12px; background-color: #4a90e2; color: white;
+      font-weight: 700; font-size: 15px; border: none; border-radius: 6px;
+      cursor: pointer; transition: background-color 0.25s ease; margin-top: 10px;
+    }
+    button:hover { background-color: #357ABD; }
+    .toggle-btn {
+      font-size: 14px; text-align: center; margin-top: 10px;
+      color: #4a90e2; cursor: pointer; user-select: none; font-weight: 600;
+    }
+    .toggle-btn span:hover { text-decoration: underline; color: #1d6fc3; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+
+  <% if (typeof username !== 'undefined') { %>
+    <div class="container">
+      <section class="card">
+        <h2>¡Hola <%= username %>!</h2>
+        <p style="text-align:center;">Estás en el panel de administración</p>
+        <form action="/logout" method="POST">
+          <button type="submit">Cerrar sesión</button>
+        </form>
+      </section>
+    </div>
+  <% } else { %>
+    <div class="container">
+      <!-- Login -->
+      <section class="card" id="login">
+        <h2>Iniciar sesión</h2>
+        <form onsubmit="handleLogin(event)">
+          <label for="loginUser">Usuario o email</label>
+          <input id="loginUser" name="username" type="text" required placeholder="Introduce usuario o email" />
+
+          <label for="loginPassword">Contraseña</label>
+          <input id="loginPassword" name="password" type="password" required placeholder="Introduce contraseña" />
+
+          <button type="submit">Entrar</button>
+        </form>
+        <p class="toggle-btn" onclick="showRegister()">¿No tienes cuenta? <span>Registrarse</span></p>
+      </section>
+
+      <!-- Registro -->
+      <section class="card hidden" id="register">
+        <h2>Registrarse</h2>
+        <form onsubmit="handleRegister(event)">
+          <label for="registerUser">Usuario</label>
+          <input id="registerUser" name="username" type="text" required placeholder="Nombre de usuario" />
+
+          <label for="registerEmail">Email</label>
+          <input id="registerEmail" name="email" type="email" required placeholder="Correo electrónico" />
+
+          <label for="registerPassword">Contraseña</label>
+          <input id="registerPassword" name="password" type="password" required placeholder="Contraseña" />
+
+          <label for="registerPasswordConfirm">Confirmar contraseña</label>
+          <input id="registerPasswordConfirm" name="passwordConfirm" type="password" required placeholder="Repite la contraseña" />
+
+          <button type="submit">Crear cuenta</button>
+        </form>
+        <p class="toggle-btn" onclick="showLogin()">¿Ya tienes cuenta? <span>Iniciar sesión</span></p>
+      </section>
+    </div>
+  <% } %>
+
+  <script>
+    function showRegister() {
+      document.getElementById('login').classList.add('hidden');
+      document.getElementById('register').classList.remove('hidden');
+    }
+
+    function showLogin() {
+      document.getElementById('register').classList.add('hidden');
+      document.getElementById('login').classList.remove('hidden');
+    }
+
+    async function handleLogin(event) {
+      event.preventDefault();
+      const username = document.getElementById('loginUser').value;
+      const password = document.getElementById('loginPassword').value;
+
+      const res = await fetch('/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        location.reload();
+      } else {
+        alert(data.message || 'Error al iniciar sesión');
+      }
+    }
+
+    async function handleRegister(event) {
+      event.preventDefault();
+      const username = document.getElementById('registerUser').value;
+      const email = document.getElementById('registerEmail').value;
+      const password = document.getElementById('registerPassword').value;
+      const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
+
+      if (password !== passwordConfirm) {
+        alert('Las contraseñas no coinciden');
+        return;
+      }
+
+      try {
+        const res = await fetch('/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, email, password, role: 'user' })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          alert('Registro exitoso, ahora inicia sesión');
+          showLogin();
+        } else {
+          const message = data.error || data.message || 'Error al registrarse';
+          alert(message);
+        }
+      } catch (err) {
+        alert('Error de red al registrarse');
+        console.error(err);
+      }
+    }
+  </script>
+</body>
+</html>
+
+

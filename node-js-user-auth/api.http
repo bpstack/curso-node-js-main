@@ -8,7 +8,7 @@ POST http://localhost:3000/register
 Content-Type: application/json
 
 {
-  "username": "bori3",
+  "username": "bori33",
   "email": "bori@example.com",
   "password": "securepassword123",
   "role": "front office Manager"
@@ -20,5 +20,5 @@ Content-Type: application/json
 ## '7f402725-6444-11f0-8664-309c239384ce', 'bori', 'bori@example.com'
 ## '8edf030f-6447-11f0-8664-309c239384ce', bori3, 'bori@example.com'
 # Borrar (PC)
-## 'b9d06546-649b-11f0-a23e-d8bbc147dfea'
+## 'b9d06546-649b-11f0-a23e-d8bbc147dfea' // 1dc0cdfd-6549-11f0-9104-d8bbc147dfea
 DELETE http://localhost:3000/users/56b47bf2-6446-11f0-8664-309c239384ce

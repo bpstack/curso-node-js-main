@@ -35,19 +35,22 @@ export class UserRepository {
         [uuid, username, email, hashedPassword, createdAt]
       )
 
-      // 5. Insertar el rol en la tabla user_role (si tienes roles)
+      // 5. Insertar el rol en la tabla user_role (si se proporciona rol)
       if (role) {
         const [roles] = await pool.query(
           'SELECT id FROM roles WHERE LOWER(name) = ?',
           [role.toLowerCase()]
         )
-        if (roles.length === 0) throw new Error('Role not found')
-        const roleId = roles[0].id
 
-        await pool.query(
-          'INSERT INTO user_role (user_id, role_id) VALUES (UUID_TO_BIN(?), ?)',
-          [uuid, roleId]
-        )
+        if (roles.length === 0) {
+          console.warn('Role not found, no se asigna rol al usuario')
+        } else {
+          const roleId = roles[0].id
+          await pool.query(
+            'INSERT INTO user_role (user_id, role_id) VALUES (UUID_TO_BIN(?), ?)',
+            [uuid, roleId]
+          )
+        }
       }
 
       // 6. Devolver usuario creado (sin password)
@@ -61,7 +64,7 @@ export class UserRepository {
       }
     } catch (error) {
       console.error('Error creating user:', error)
-      throw new Error('Error creating user')
+      throw new Error('Error creating user: ' + error.message) // Esto lo debo de manejar así ??
     }
   }
 
