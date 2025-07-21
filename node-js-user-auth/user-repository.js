@@ -16,11 +16,13 @@ const pool = mysql.createPool({
 })
 
 export class UserRepository {
-  static async create({ username, email, password, role }) {
-    // 1. Hashear la contraseña (así la guardas segura)
+  static async create({ username, email, password }) {
+    const DEFAULT_ROLE = 'recepcionist'
+
+    // 1. Hashear la contraseña
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS)
 
-    // 2. Obtener un UUID nuevo (puedes usar UUID de MySQL o generar en JS)
+    // 2. Obtener un UUID nuevo
     const [uuidResult] = await pool.query('SELECT UUID() as uuid')
     const uuid = uuidResult[0].uuid
 
@@ -30,27 +32,27 @@ export class UserRepository {
     try {
       // 4. Insertar el usuario en la tabla users
       await pool.query(
-        `INSERT INTO users (id, name, email, password, created_at, is_active)
+        `INSERT INTO users (id, username, email, password, created_at, is_active)
         VALUES (UUID_TO_BIN(?), ?, ?, ?, ?, 1)`,
         [uuid, username, email, hashedPassword, createdAt]
       )
 
-      // 5. Insertar el rol en la tabla user_role (si se proporciona rol)
-      if (role) {
-        const [roles] = await pool.query(
-          'SELECT id FROM roles WHERE LOWER(name) = ?',
-          [role.toLowerCase()]
-        )
+      // 5. Buscar el rol por defecto
+      const [roles] = await pool.query(
+        'SELECT id FROM roles WHERE LOWER(name) = ?',
+        [DEFAULT_ROLE.toLowerCase()]
+      )
 
-        if (roles.length === 0) {
-          console.warn('Role not found, no se asigna rol al usuario')
-        } else {
-          const roleId = roles[0].id
-          await pool.query(
-            'INSERT INTO user_role (user_id, role_id) VALUES (UUID_TO_BIN(?), ?)',
-            [uuid, roleId]
-          )
-        }
+      if (roles.length === 0) {
+        console.warn(
+          `Role '${DEFAULT_ROLE}' not found, no se asigna rol al usuario`
+        )
+      } else {
+        const roleId = roles[0].id
+        await pool.query(
+          'INSERT INTO user_role (user_id, role_id) VALUES (UUID_TO_BIN(?), ?)',
+          [uuid, roleId]
+        )
       }
 
       // 6. Devolver usuario creado (sin password)
@@ -60,11 +62,23 @@ export class UserRepository {
         email,
         created_at: createdAt,
         is_active: 1,
-        role: role || null,
+        role: DEFAULT_ROLE,
       }
     } catch (error) {
       console.error('Error creating user:', error)
-      throw new Error('Error creating user: ' + error.message) // Esto lo debo de manejar así ??
+
+      // Manejo seguro de errores:
+      // Si es un error de duplicado (username/email único), informar claramente
+      if (
+        error.code === 'ER_DUP_ENTRY' || // MySQL error code para entrada duplicada
+        error.message.includes('duplicate') ||
+        error.message.includes('UNIQUE')
+      ) {
+        throw new Error('El nombre de usuario o email ya existe')
+      }
+
+      // Para otros errores, lanzar un error genérico para no filtrar detalles sensibles
+      throw new Error('Error interno al crear usuario')
     }
   }
 

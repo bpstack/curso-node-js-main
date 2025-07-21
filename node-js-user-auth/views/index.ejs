@@ -6,29 +6,92 @@
   <title>Login y Registro</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body, html { height: 100%; font-family: 'Space Grotesk', sans-serif, Tahoma, Geneva, Verdana; background: #f0f2f5; display: flex; justify-content: center; align-items: center; }
-    .container { display: flex; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 12px 25px rgba(0,0,0,0.1); max-width: 400px; width: 100%; flex-direction: column; gap: 20px; }
-    .card { background: #ffffff; border-radius: 10px; box-shadow: 0 8px 15px rgba(0,0,0,0.1); padding: 30px 40px; display: flex; flex-direction: column; }
-    h2 { margin-bottom: 20px; color: #333; text-align: center; font-weight: 700; font-size: 26px; }
-    form { display: flex; flex-direction: column; }
-    label { margin-bottom: 6px; font-weight: 600; color: #555; }
+    body, html {
+      height: 100%;
+      font-family: 'Space Grotesk', sans-serif, Tahoma, Geneva, Verdana;
+      background: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .container {
+      display: flex;
+      background: white;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 12px 25px rgba(0,0,0,0.1);
+      max-width: 400px;
+      width: 100%;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .card {
+      background: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+      padding: 30px 40px;
+      display: flex;
+      flex-direction: column;
+    }
+    h2 {
+      margin-bottom: 20px;
+      color: #333;
+      text-align: center;
+      font-weight: 700;
+      font-size: 26px;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+    }
+    label {
+      margin-bottom: 6px;
+      font-weight: 600;
+      color: #555;
+    }
     input[type="text"], input[type="email"], input[type="password"] {
-      padding: 12px 14px; margin-bottom: 15px; border: 1.8px solid #ccc;
-      border-radius: 6px; font-size: 15px; transition: border-color 0.3s ease;
+      padding: 12px 14px;
+      margin-bottom: 15px;
+      border: 1.8px solid #ccc;
+      border-radius: 6px;
+      font-size: 15px;
+      transition: border-color 0.3s ease;
     }
-    input:focus { border-color: #4a90e2; outline: none; }
+    input:focus {
+      border-color: #4a90e2;
+      outline: none;
+    }
     button {
-      padding: 12px; background-color: #4a90e2; color: white;
-      font-weight: 700; font-size: 15px; border: none; border-radius: 6px;
-      cursor: pointer; transition: background-color 0.25s ease; margin-top: 10px;
+      padding: 12px;
+      background-color: #4a90e2;
+      color: white;
+      font-weight: 700;
+      font-size: 15px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.25s ease;
+      margin-top: 10px;
     }
-    button:hover { background-color: #357ABD; }
+    button:hover {
+      background-color: #357ABD;
+    }
     .toggle-btn {
-      font-size: 14px; text-align: center; margin-top: 10px;
-      color: #4a90e2; cursor: pointer; user-select: none; font-weight: 600;
+      font-size: 14px;
+      text-align: center;
+      margin-top: 10px;
+      color: #4a90e2;
+      cursor: pointer;
+      user-select: none;
+      font-weight: 600;
     }
-    .toggle-btn span:hover { text-decoration: underline; color: #1d6fc3; }
-    .hidden { display: none; }
+    .toggle-btn span:hover {
+      text-decoration: underline;
+      color: #1d6fc3;
+    }
+    .hidden {
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -96,27 +159,33 @@
 
     async function handleLogin(event) {
       event.preventDefault();
-      const username = document.getElementById('loginUser').value;
+      const username = document.getElementById('loginUser').value.trim();
       const password = document.getElementById('loginPassword').value;
 
-      const res = await fetch('/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-      });
+      try {
+        const res = await fetch('/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
 
-      const data = await res.json();
-      if (res.ok) {
-        location.reload();
-      } else {
-        alert(data.message || 'Error al iniciar sesión');
+        const data = await res.json();
+
+        if (res.ok) {
+          location.reload();
+        } else {
+          alert(data.message || 'Error al iniciar sesión');
+        }
+      } catch (error) {
+        alert('Error de red al iniciar sesión');
+        console.error(error);
       }
     }
 
     async function handleRegister(event) {
       event.preventDefault();
-      const username = document.getElementById('registerUser').value;
-      const email = document.getElementById('registerEmail').value;
+      const username = document.getElementById('registerUser').value.trim();
+      const email = document.getElementById('registerEmail').value.trim();
       const password = document.getElementById('registerPassword').value;
       const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
 
@@ -129,7 +198,7 @@
         const res = await fetch('/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, email, password, role: 'user' })
+          body: JSON.stringify({ username, email, password })
         });
 
         const data = await res.json();
@@ -149,5 +218,6 @@
   </script>
 </body>
 </html>
+
 
 

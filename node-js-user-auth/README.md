@@ -176,4 +176,6 @@ name,
 // Continúas con la sesión o JWT
 
 ---
+cosas a considerar
+- intentar hacer login y sesion
 ```

@@ -7,6 +7,8 @@ import {
   getValidationErrors,
 } from './validations/user-validation.js'
 
+import { canDeleteUsers } from './middlewares/roleCheck.js'
+
 // const PORT = process.env.PORT ?? 3000 // Definir el puerto en el que va a correr la aplicación, si no hay una variable de entorno PORT, usar 3000. // Lo hemos comentado porque ahora usamos config.js e importamos el puerto desde allí
 
 app.use(express.json()) // Middleware para parsear el cuerpo de las peticiones como JSON, así podemos recibir datos en formato JSON en las peticiones POST. Es decir, el req.body es undefined, EXPRESS por defecto no lo "tramita".
@@ -55,6 +57,16 @@ app.post('/register', async (req, res) => {
 })
 
 app.post('/logout', (req, res) => {})
+
+app.delete('/users/:id', canDeleteUsers, async (req, res) => {
+  const userId = req.params.id
+  try {
+    await UserRepository.delete(userId)
+    res.status(200).json({ message: 'Usuario eliminado correctamente' })
+  } catch (error) {
+    res.status(500).json({ error: 'Error al eliminar usuario' })
+  }
+})
 
 app.get('protected', (req, res) => {}) // Ruta protegida, que requiere autenticación
 
