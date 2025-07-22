@@ -2,6 +2,12 @@
 
 ### login
 POST http://localhost:3000/login
+Content-Type: application/json
+
+{
+  "username": "tester1",
+  "password": "tester1"
+}
 
 ### Registro de nuevo usuario con role
 POST http://localhost:3000/register

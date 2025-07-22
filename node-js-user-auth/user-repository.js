@@ -1,3 +1,5 @@
+import { Validation } from './validations/user-validation.js'
+
 import mysql from 'mysql2/promise'
 import dotenv from 'dotenv'
 
@@ -90,7 +92,37 @@ export class UserRepository {
   // Devuelvo datos básicos sin contraseña.
   // La columna password debería existir en tu tabla.
 
-  static login({ username, password }) {}
+  static async login({ username, password }) {
+    try {
+      Validation.username(username)
+      Validation.password(password)
+    } catch (err) {
+      throw new Error(err.message) // O un error personalizado con más contexto
+    }
+
+    const [rows] = await pool.query(
+      `SELECT BIN_TO_UUID(id) as id, username, email, password, is_active, created_at
+    FROM users
+    WHERE username = ?`,
+      [username]
+    )
+
+    const user = rows[0]
+
+    if (!user) {
+      throw new Error('Usuario no encontrado') // O un error personalizado con más contexto
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password)
+    if (!isPasswordValid) {
+      throw new Error('Contraseña incorrecta')
+    }
+
+    // Devuelve el usuario sin contraseña
+    const { password: _pw, ...userWithoutPassword } = user.toObject?.() ?? user
+    return userWithoutPassword
+  }
+
   static logout({ username }) {}
   static findAll() {}
   static findById(id) {}
