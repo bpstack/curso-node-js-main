@@ -172,7 +172,7 @@
         const data = await res.json();
 
         if (res.ok) {
-          location.reload();
+          window.location.href = '/protected';
         } else {
           alert(data.message || 'Error al iniciar sesión');
         }

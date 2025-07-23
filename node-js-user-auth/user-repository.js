@@ -113,13 +113,13 @@ export class UserRepository {
       throw new Error('Usuario no encontrado') // O un error personalizado con más contexto
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password)
+    const isPasswordValid = await bcrypt.compare(password, user.password) // Compara la contraseña ingresada con la hasheada en la base de datos
     if (!isPasswordValid) {
       throw new Error('Contraseña incorrecta')
     }
 
     // Devuelve el usuario sin contraseña
-    const { password: _pw, ...userWithoutPassword } = user.toObject?.() ?? user
+    const { password: _pw, ...userWithoutPassword } = user.toObject?.() ?? user // Si quiero añadir otro elemento que no quiero mostrar lo debo de añadir aqui junto a password
     return userWithoutPassword
   }
 

@@ -1,6 +1,8 @@
 import express from 'express' // Importar la dependencia, la herramienta que vamos a usar
-import { PORT } from './config/config.js' // Importar la configuración del puerto desde el archivo config.js. Esta manera es más moderna y permite usar variables de entorno fácilmente
-const app = express() // crear la aplicación, una instancia de express
+import jsw from 'jsonwebtoken'
+import cookieParser from 'cookie-parser'
+import { PORT, SECRET_JWT_KEY } from './config/config.js' // Importar la configuración del puerto desde el archivo config.js. Esta manera es más moderna y permite usar variables de entorno fácilmente.
+
 import { UserRepository } from './user-repository.js' // Importar el repositorio de usuarios
 import {
   validateUser,
@@ -10,23 +12,34 @@ import {
 import { canDeleteUsers } from './middlewares/roleCheck.js'
 import { tr } from 'zod/v4/locales'
 
-// const PORT = process.env.PORT ?? 3000 // Definir el puerto en el que va a correr la aplicación, si no hay una variable de entorno PORT, usar 3000. // Lo hemos comentado porque ahora usamos config.js e importamos el puerto desde allí
-
+const app = express() // crear la aplicación, una instancia de express
 app.disable('x-powered-by')
 // Deshabilitar el encabezado x-powered-by, que indica que la app está hecha con Express. Es una buena práctica de seguridad para no revelar información innecesaria.
-
+app.use(cookieParser()) // Middleware para parsear cookies, así podemos acceder a las cookies en las peticiones. Esto es útil si usamos autenticación basada en cookies.
+// Por ejemplo, si usamos JWT en cookies, este middleware nos permite acceder a ellas fácilmente.
 app.use(express.json()) // Middleware para parsear el cuerpo de las peticiones como JSON, así podemos recibir datos en formato JSON en las peticiones POST. Es decir, el req.body es undefined, EXPRESS por defecto no lo "tramita".
 
 app.set('view engine', 'ejs') // Configurar el motor de vistas, en este caso ejs
 
 app.get('/', (req, res) => {
-  res.render('index')
+  const token = req.cookies.access_token
+
+  if (!token) {
+    return res.render('index', { isAuthenticated: false })
+  }
+
+  try {
+    const data = jsw.verify(token, SECRET_JWT_KEY)
+    res.render('index', { isAuthenticated: true, username: data.username })
+  } catch (error) {
+    res.render('index', { isAuthenticated: false })
+  }
 })
 
 app.post('/login', async (req, res) => {
-  const { username, password } = req.body // Extraer username y password del cuerpo de la petición
-
   try {
+    const { username, password } = req.body
+
     // 1. Validar entrada
     if (!username || !password) {
       return res
@@ -34,24 +47,56 @@ app.post('/login', async (req, res) => {
         .json({ error: 'Username and password are required' })
     }
 
-    // 2. Autenticar usuario (asumiendo que login devuelve null si falla)
+    // 2. Autenticar usuario
     const user = await UserRepository.login({ username, password })
     if (!user) {
       return res.status(401).json({ error: 'Invalid credentials' })
     }
 
-    // 3. Eliminar la contraseña antes de responder
-    const { password: _, ...userWithoutPassword } = user
+    // 3. Crear token JWT
+    const token = jsw.sign(
+      { id: user._id, username: user.username },
+      SECRET_JWT_KEY,
+      { expiresIn: '8h' }
+    )
+    // 4. Guardar el token en cookie
+    res.cookie('access_token', token, {
+      httpOnly: true, // Hace que la cookie sólo se pueda acceder desde el servidor, es decir, NO sea accesible desde JavaScript del lado del cliente
+      secure: process.env.NODE_ENV === 'production', // sólo en https en producción
+      sameSite: 'Strict', // Sólo desde el mismo sitio, mismo dominio, para evitar ataques CSRF
+      maxAge: 8 * 60 * 60 * 1000, // 8 horas en milisegundos
+    })
 
-    // 4. Responder con éxito
-    return res.status(200).json({ success: true, user: userWithoutPassword })
+    // 4. Eliminar la contraseña del objeto usuario
+    const { password: _, ...userWithoutPassword } = user.toObject?.() ?? user
+
+    // 5. Devolver token + datos del usuario
+    return res.status(200).json({
+      success: true,
+      user: userWithoutPassword,
+      token,
+    })
   } catch (error) {
     console.error('Login error:', error)
     return res.status(500).json({ error: 'Internal server error' })
   }
 })
 
-app.get('protected', (req, res) => {}) // Ruta protegida, que requiere autenticación
+app.get('/protected', (req, res) => {
+  const token = req.cookies.access_token // Obtener el token de las cookies
+  if (!token) {
+    return res.status(403).send('Access not authorized')
+  }
+
+  try {
+    const data = jsw.verify(token, SECRET_JWT_KEY) // Verificar el token
+    res.render('protected', data) // {_id, username} = data
+  } catch (error) {
+    res.status(401).send('Access not authorized') // Si el token no es válido, enviar un error 401
+  }
+
+  //TODO: else 401
+})
 
 app.post('/register', async (req, res) => {
   // 1. Validar entrada
@@ -88,7 +133,10 @@ app.post('/register', async (req, res) => {
   }
 })
 
-app.post('/logout', (req, res) => {})
+app.post('/logout', (req, res) => {
+  res.clearCookie('access_token')
+  res.redirect('/')
+})
 
 app.get('/users', async (req, res) => {
   try {
