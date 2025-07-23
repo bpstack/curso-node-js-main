@@ -1,5 +1,5 @@
 import express from 'express' // Importar la dependencia, la herramienta que vamos a usar
-import jsw from 'jsonwebtoken'
+import jwt from 'jsonwebtoken'
 import cookieParser from 'cookie-parser'
 import { PORT, SECRET_JWT_KEY } from './config/config.js' // Importar la configuración del puerto desde el archivo config.js. Esta manera es más moderna y permite usar variables de entorno fácilmente.
 
@@ -10,7 +10,6 @@ import {
 } from './validations/user-validation.js'
 
 import { canDeleteUsers } from './middlewares/roleCheck.js'
-import { tr } from 'zod/v4/locales'
 
 const app = express() // crear la aplicación, una instancia de express
 app.disable('x-powered-by')
@@ -19,19 +18,28 @@ app.use(cookieParser()) // Middleware para parsear cookies, así podemos acceder
 // Por ejemplo, si usamos JWT en cookies, este middleware nos permite acceder a ellas fácilmente.
 app.use(express.json()) // Middleware para parsear el cuerpo de las peticiones como JSON, así podemos recibir datos en formato JSON en las peticiones POST. Es decir, el req.body es undefined, EXPRESS por defecto no lo "tramita".
 
+app.use((req, res, next) => {
+  // Middleware para manejar la autenticación con JWT
+  // Este middleware se ejecuta en cada petición para verificar si el usuario está autenticado
+  const token = req.cookies.access_token // Obtener el token de las cookies
+
+  req.session = { user: null } // Inicializar la sesión, si es que se usa una
+  try {
+    const data = jwt.verify(token, SECRET_JWT_KEY) // Verificar el token
+    req.session.user = data // Guardar los datos del usuario en la sesión
+  } catch {}
+
+  next() // Llamar al siguiente middleware o ruta
+})
+
 app.set('view engine', 'ejs') // Configurar el motor de vistas, en este caso ejs
 
 app.get('/', (req, res) => {
-  const token = req.cookies.access_token
+  const user = req.session.user
 
-  if (!token) {
-    return res.render('index', { isAuthenticated: false })
-  }
-
-  try {
-    const data = jsw.verify(token, SECRET_JWT_KEY)
-    res.render('index', { isAuthenticated: true, username: data.username })
-  } catch (error) {
+  if (user) {
+    res.render('index', { isAuthenticated: true, username: user.username })
+  } else {
     res.render('index', { isAuthenticated: false })
   }
 })
@@ -54,7 +62,7 @@ app.post('/login', async (req, res) => {
     }
 
     // 3. Crear token JWT
-    const token = jsw.sign(
+    const token = jwt.sign(
       { id: user._id, username: user.username },
       SECRET_JWT_KEY,
       { expiresIn: '8h' }
@@ -83,19 +91,13 @@ app.post('/login', async (req, res) => {
 })
 
 app.get('/protected', (req, res) => {
-  const token = req.cookies.access_token // Obtener el token de las cookies
-  if (!token) {
+  const user = req.session.user
+
+  if (!user) {
     return res.status(403).send('Access not authorized')
   }
 
-  try {
-    const data = jsw.verify(token, SECRET_JWT_KEY) // Verificar el token
-    res.render('protected', data) // {_id, username} = data
-  } catch (error) {
-    res.status(401).send('Access not authorized') // Si el token no es válido, enviar un error 401
-  }
-
-  //TODO: else 401
+  res.render('protected', user) // Puedes acceder a user._id y user.username en la vista
 })
 
 app.post('/register', async (req, res) => {
@@ -135,6 +137,8 @@ app.post('/register', async (req, res) => {
 
 app.post('/logout', (req, res) => {
   res.clearCookie('access_token')
+  //jsontatus(200).json({ message: 'Logged out successfully' }) // Responder con éxito, indicando que se ha cerrado sesión (solo se puede hacer una respuesta por petición)
+  // También podrías redirigir a la página de inicio o login
   res.redirect('/')
 })
 

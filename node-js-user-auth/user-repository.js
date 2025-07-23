@@ -131,17 +131,6 @@ export class UserRepository {
   static delete(id) {}
 }
 
-// ### 🔐 `login({ username, password })`
-
-// * **Sí**, lo más común es usar `username` y `password` en el login.
-// * Puedes validar así:
-
-//   1. Buscar al usuario por `username`.
-//   2. Comparar la contraseña con `bcrypt.compare()`.
-//   3. Si es correcta, devolver los datos del usuario (sin contraseña) o generar un token (si usas JWT más adelante).
-
-// ---
-
 // ### 🔓 `logout({ username })` o `logout({ id })`
 
 // * Si manejas **tokens (como JWT)**, el logout se hace del lado del cliente o invalidando el token. (los voy a usar JWT)
