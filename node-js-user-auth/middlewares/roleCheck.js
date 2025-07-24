@@ -1,7 +1,10 @@
 export function canDeleteUsers(req, res, next) {
-  const allowedRoles = ['1', '2'] // General Manager y Front office Manager
+  console.log('User en roleCheck:', req.user)
 
-  if (req.user && allowedRoles.includes(req.user.role.toString())) {
+  if (
+    req.user?.role &&
+    ['General Manager', 'Front office Manager'].includes(req.user.role)
+  ) {
     next()
   } else {
     res.status(403).json({ error: 'No tienes permiso para eliminar usuarios' })

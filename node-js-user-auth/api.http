@@ -5,8 +5,8 @@ POST http://localhost:3000/login
 Content-Type: application/json
 
 {
-  "username": "tester1",
-  "password": "tester1"
+  "username": "admin",
+  "password": "admin123"
 }
 
 ### Registro de nuevo usuario con role
@@ -14,17 +14,13 @@ POST http://localhost:3000/register
 Content-Type: application/json
 
 {
-  "username": "bori33",
+  "username": "admin",
   "email": "bori@example.com",
-  "password": "securepassword123",
+  "password": "admin123",
   "role": "front office Manager"
 }
 
 ### Borrar usuario por ID
-## Tengo que borrar (esto es en el portatil)
-## '96f53d82-6446-11f0-8664-309c239384ce', 'bori2', 'bori@example.com'
-## '7f402725-6444-11f0-8664-309c239384ce', 'bori', 'bori@example.com'
-## '8edf030f-6447-11f0-8664-309c239384ce', bori3, 'bori@example.com'
-# Borrar (PC)
-## 'b9d06546-649b-11f0-a23e-d8bbc147dfea' // 1dc0cdfd-6549-11f0-9104-d8bbc147dfea
-DELETE http://localhost:3000/users/56b47bf2-6446-11f0-8664-309c239384ce
+DELETE http://localhost:3000/users/da708205-6549-11f0-9104-d8bbc147dfea
+
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwicm9sZSI6IkdlbmVyYWwgTWFuYWdlciIsImlhdCI6MTc1MzMxNzc2NywiZXhwIjoxNzUzMzQ2NTY3fQ.h6zwck_tAo_5vuxVuN-5oga2l59g6MrGa4W-4f_Z920

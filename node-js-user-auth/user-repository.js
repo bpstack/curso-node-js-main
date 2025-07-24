@@ -101,9 +101,18 @@ export class UserRepository {
     }
 
     const [rows] = await pool.query(
-      `SELECT BIN_TO_UUID(id) as id, username, email, password, is_active, created_at
-    FROM users
-    WHERE username = ?`,
+      `SELECT 
+      BIN_TO_UUID(u.id) as id, 
+      u.username, 
+      u.email, 
+      u.password, 
+      u.is_active, 
+      u.created_at, 
+      r.name AS role
+    FROM users u
+    JOIN user_role ur ON u.id = ur.user_id
+    JOIN roles r ON ur.role_id = r.id
+    WHERE u.username = ?`,
       [username]
     )
 
@@ -128,7 +137,18 @@ export class UserRepository {
   static findById(id) {}
   static findByUsername(username) {}
   static update() {}
-  static delete(id) {}
+
+  static async delete(id) {
+    try {
+      const [result] = await pool.query(
+        'DELETE FROM users WHERE id = UUID_TO_BIN(?)',
+        [id]
+      )
+      return result
+    } catch (err) {
+      throw new Error('Error al eliminar el usuario: ' + err.message)
+    }
+  }
 }
 
 // ### 🔓 `logout({ username })` o `logout({ id })`

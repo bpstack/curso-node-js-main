@@ -10,6 +10,8 @@ import {
 } from './validations/user-validation.js'
 
 import { canDeleteUsers } from './middlewares/roleCheck.js'
+import { authenticateToken } from './middlewares/authenticateToken.js'
+import { authFromCookie } from './middlewares/authFromCookie.js'
 
 const app = express() // crear la aplicación, una instancia de express
 app.disable('x-powered-by')
@@ -18,24 +20,12 @@ app.use(cookieParser()) // Middleware para parsear cookies, así podemos acceder
 // Por ejemplo, si usamos JWT en cookies, este middleware nos permite acceder a ellas fácilmente.
 app.use(express.json()) // Middleware para parsear el cuerpo de las peticiones como JSON, así podemos recibir datos en formato JSON en las peticiones POST. Es decir, el req.body es undefined, EXPRESS por defecto no lo "tramita".
 
-app.use((req, res, next) => {
-  // Middleware para manejar la autenticación con JWT
-  // Este middleware se ejecuta en cada petición para verificar si el usuario está autenticado
-  const token = req.cookies.access_token // Obtener el token de las cookies
-
-  req.session = { user: null } // Inicializar la sesión, si es que se usa una
-  try {
-    const data = jwt.verify(token, SECRET_JWT_KEY) // Verificar el token
-    req.session.user = data // Guardar los datos del usuario en la sesión
-  } catch {}
-
-  next() // Llamar al siguiente middleware o ruta
-})
+app.use(authFromCookie)
 
 app.set('view engine', 'ejs') // Configurar el motor de vistas, en este caso ejs
 
 app.get('/', (req, res) => {
-  const user = req.session.user
+  const user = req.user
 
   if (user) {
     res.render('index', { isAuthenticated: true, username: user.username })
@@ -63,7 +53,7 @@ app.post('/login', async (req, res) => {
 
     // 3. Crear token JWT
     const token = jwt.sign(
-      { id: user._id, username: user.username },
+      { id: user._id, username: user.username, role: user.role },
       SECRET_JWT_KEY,
       { expiresIn: '8h' }
     )
@@ -91,7 +81,7 @@ app.post('/login', async (req, res) => {
 })
 
 app.get('/protected', (req, res) => {
-  const user = req.session.user
+  const user = req.user
 
   if (!user) {
     return res.status(403).send('Access not authorized')
@@ -151,15 +141,20 @@ app.get('/users', async (req, res) => {
   }
 })
 
-app.delete('/users/:id', canDeleteUsers, async (req, res) => {
-  const userId = req.params.id
-  try {
-    await UserRepository.delete(userId)
-    res.status(200).json({ message: 'Usuario eliminado correctamente' })
-  } catch (error) {
-    res.status(500).json({ error: 'Error al eliminar usuario' })
+app.delete(
+  '/users/:id',
+  authenticateToken,
+  canDeleteUsers,
+  async (req, res) => {
+    const userId = req.params.id
+    try {
+      await UserRepository.delete(userId)
+      res.status(200).json({ message: 'Usuario eliminado correctamente' })
+    } catch (error) {
+      res.status(500).json({ error: 'Error al eliminar usuario' })
+    }
   }
-})
+)
 
 app.listen(PORT, () => {
   // Iniciar el servidor, escuchando en el puerto definido
