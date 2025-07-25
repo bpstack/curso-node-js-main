@@ -1,6 +1,8 @@
 # Esto es REST Client, para probar la API REST cuando no tienes el frontend. Se puede usar Yaak, Postman, etc.
 
-### login
+// 1. Autenticación y Registro
+
+### Login (obtener tokens)
 POST http://localhost:3000/login
 Content-Type: application/json
 
@@ -9,23 +11,66 @@ Content-Type: application/json
   "password": "admin123"
 }
 
-### Registro de nuevo usuario con role
+### Registro de nuevo usuario con rol (solo admin puede hacer esto idealmente)
 POST http://localhost:3000/register
 Content-Type: application/json
 
 {
-  "username": "admin",
-  "email": "bori@example.com",
-  "password": "admin123",
+  "username": "nuevoUsuario",
+  "email": "correo@ejemplo.com",
+  "password": "passwordSeguro",
   "role": "front office Manager"
 }
 
-### Borrar usuario por ID
-DELETE http://localhost:3000/users/da708205-6549-11f0-9104-d8bbc147dfea
+// 2. Operaciones con usuarios (requieren autenticación y autorización)
 
-Authorization: Bearer TOKEN AQUI
-
-### Obtener todos los usuarios (solo si estás autenticado como manager)
+### Obtener todos los usuarios (solo admin o manager con permisos)
 GET http://localhost:3000/users
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwicm9sZSI6IkdlbmVyYWwgTWFuYWdlciIsImlhdCI6MTc1MzQwMTE1NiwiZXhwIjoxNzUzNDI5OTU2fQ.sclWqNMMyM0lALz7K3FkpMWtJN-Ry5s0RFYmz9RwU0U
+Authorization: Bearer TU_ACCESS_TOKEN
 
+### Obtener usuarios por rol (solo admin)
+GET http://localhost:3000/users/role/general%20manager
+Cookie: access_token=TU_ACCESS_TOKEN
+
+### Obtener usuario por ID (solo admin)
+GET http://localhost:3000/users/24cee63c-6548-11f0-9104-d8bbc147dfea
+Cookie: access_token=TU_ACCESS_TOKEN
+
+### Actualizar usuario (solo admin)
+PUT http://localhost:3000/users/3a344616-6546-11f0-9104-d8bbc147dfea
+Content-Type: application/json
+Cookie: access_token=TU_ACCESS_TOKEN
+
+{
+  "username": "Tamara",
+  "email": "malaga@email.com",
+  "role": "Recepcionist"
+}
+
+### Borrar usuario por ID (solo admin)
+DELETE http://localhost:3000/users/24cee63c-6548-11f0-9104-d8bbc147dfea
+Authorization: Bearer TU_ACCESS_TOKEN
+
+// 3. Sesión y tokens
+
+### Refresh Token (renovar access token usando refresh token en cookie)
+POST http://localhost:3000/refresh-token
+Cookie: refresh_token=TU_REFRESH_TOKEN
+
+### Logout (cerrar sesión, borrar cookies)
+POST http://localhost:3000/logout
+
+//// 4. Rutas adicionales interesantes para una API de usuarios (ON WORKING)
+
+# ### Obtener perfil del usuario autenticado (para mostrar datos propios)
+# GET http://localhost:3000/profile
+# Cookie: access_token=TU_ACCESS_TOKEN
+
+# ### Cambiar contraseña (usuario autenticado)
+# PUT http://localhost:3000/profile/password
+# Content-Type: application/json
+# Cookie: access_token=TU_ACCESS_TOKEN
+
+# {
+#   "oldPassword": "contraseñaVieja",
+#   "newPassword": "contraseñaNueva"

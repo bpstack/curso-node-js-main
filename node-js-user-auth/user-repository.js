@@ -84,14 +84,6 @@ export class UserRepository {
     }
   }
 
-  //   Notas:
-  // Uso bcryptjs para el hash, es muy común y seguro. (tengo que instalarlo e importarlo)
-  // Genero UUID en MySQL con UUID() y convierto a binario para id.
-  // created_at se genera con JS para evitar problemas de zona horaria.
-  // Inserto usuario y después el rol (si se envía).
-  // Devuelvo datos básicos sin contraseña.
-  // La columna password debería existir en tu tabla.
-
   static async login({ username, password }) {
     try {
       Validation.username(username)
@@ -154,10 +146,119 @@ export class UserRepository {
     }
   }
 
-  static getById(id) {}
-  static getByUsername(username) {}
-  static getByRole(role) {}
-  static update() {}
+  static async getById(id) {
+    try {
+      const [rows] = await pool.query(
+        `
+        SELECT 
+          BIN_TO_UUID(u.id) AS id,
+          u.username,
+          u.email,
+          u.created_at,
+          u.is_active,
+          r.name AS role
+        FROM users u
+        LEFT JOIN user_role ur ON u.id = ur.user_id
+        LEFT JOIN roles r ON ur.role_id = r.id
+        WHERE u.id = UUID_TO_BIN(?)
+      `,
+        [id]
+      )
+
+      return rows[0] || null
+    } catch (error) {
+      console.error('Error en getById:', error)
+      throw new Error('Error interno al obtener usuario por ID')
+    }
+  }
+
+  static async getByUsername(username) {
+    try {
+      const [rows] = await pool.query(
+        `
+        SELECT 
+          BIN_TO_UUID(u.id) AS id,
+          u.username,
+          u.email,
+          u.created_at,
+          u.is_active,
+          r.name AS role
+        FROM users u
+        LEFT JOIN user_role ur ON u.id = ur.user_id
+        LEFT JOIN roles r ON ur.role_id = r.id
+        WHERE u.username = ?
+      `,
+        [username]
+      )
+
+      return rows[0] || null
+    } catch (error) {
+      console.error('Error en getByUsername:', error)
+      throw new Error('Error interno al obtener usuario por username')
+    }
+  }
+
+  static async getByRole(role) {
+    try {
+      const [rows] = await pool.query(
+        `
+        SELECT 
+          BIN_TO_UUID(u.id) AS id,
+          u.username,
+          u.email,
+          u.created_at,
+          u.is_active,
+          r.name AS role
+        FROM users u
+        INNER JOIN user_role ur ON u.id = ur.user_id
+        INNER JOIN roles r ON ur.role_id = r.id
+        WHERE LOWER(r.name) = LOWER(?)
+      `,
+        [role]
+      )
+
+      return rows
+    } catch (error) {
+      console.error('Error en getByRole:', error)
+      throw new Error('Error interno al obtener usuarios por rol')
+    }
+  }
+
+  static async update(id, { username, email, role }) {
+    const dbConnection = await pool.getConnection()
+    try {
+      await dbConnection.beginTransaction()
+
+      // Actualizar username y email en tabla users
+      await dbConnection.query(
+        `
+        UPDATE users
+        SET username = ?, email = ?
+        WHERE id = UUID_TO_BIN(?)
+      `,
+        [username, email, id]
+      )
+
+      // Actualizar o insertar rol en user_role (cuando el rol es null, no se actualiza)
+      await dbConnection.query(
+        `
+        INSERT INTO user_role (user_id, role_id)
+        VALUES (UUID_TO_BIN(?), (SELECT id FROM roles WHERE name = ?))
+        ON DUPLICATE KEY UPDATE role_id = VALUES(role_id)
+      `,
+        [id, role]
+      )
+
+      await dbConnection.commit()
+      return true
+    } catch (error) {
+      await dbConnection.rollback()
+      console.error('Error en update:', error)
+      throw new Error('Error interno al actualizar usuario')
+    } finally {
+      dbConnection.release()
+    }
+  }
 
   static async delete(id) {
     try {
@@ -171,165 +272,3 @@ export class UserRepository {
     }
   }
 }
-
-// ### 🔓 `logout({ username })` o `logout({ id })`
-
-// * Si manejas **tokens (como JWT)**, el logout se hace del lado del cliente o invalidando el token. (los voy a usar JWT)
-// * Si usas sesiones, puedes usar `id` o `username` según cómo identifiques al usuario.
-// * **Recomendado:** usa `id`, es más específico y no cambia.
-
-// ---
-
-// ### 📋 `findAll()`
-
-// * **Sí es útil.** Devuelve la lista de todos los usuarios.
-// * Lo usarías, por ejemplo, en:
-
-//   * Un panel de administración.
-//   * Un dashboard para ver registros.
-// FIND ALL, absolutamente todos los datos. (no tenemos en el LEFT JOIN la tabla departamento porque aun no tengo claro como relacionarlo con la tabla users o con cualquier otra...)
-
-// static async findAll() {
-//   try {
-//     const [rows] = await pool.query(
-//       `SELECT
-//          BIN_TO_UUID(u.id) AS id,
-//          u.username,
-//          u.email,
-//          u.is_active,
-//          u.created_at,
-//          r.name AS role
-//        FROM users u
-//        LEFT JOIN user_role ur ON u.id = ur.user_id
-//        LEFT JOIN roles r ON ur.role_id = r.id`
-//     )
-
-//     return rows
-//   } catch (err) {
-//     throw new Error('Error al obtener todos los usuarios: ' + err.message)
-//   }
-// }
-
-// ---
-
-// ### 🔎 `findById(id)`
-
-// * Ese método findById(id) te devuelve todos los datos principales del usuario, junto con su rol, gracias al JOIN que haces con las tablas user_role y roles
-
-// static async findById(id) {
-//   try {
-//     const [rows] = await pool.query(
-//       `SELECT
-//         BIN_TO_UUID(u.id) as id,
-//         u.username,
-//         u.email,
-//         u.is_active,
-//         u.created_at,
-//         r.name as role
-//       FROM users u
-//       JOIN user_role ur ON u.id = ur.user_id
-//       JOIN roles r ON ur.role_id = r.id
-//       WHERE u.id = UUID_TO_BIN(?)`,
-//       [id]
-//     )
-
-//     if (rows.length === 0) {
-//       throw new Error('Usuario no encontrado')
-//     }
-
-//     return rows[0]
-//   } catch (err) {
-//     throw new Error('Error al buscar usuario por ID: ' + err.message)
-//   }
-// }
-
-// ### 🔎 `findByUsername(username)`
-
-// * Útil **solo si necesitas buscar al usuario por nombre**.
-// * Puede ser útil en:
-
-//   * Búsqueda por parte de admins.
-//   * Sistemas donde el `username` es clave principal.
-// * Si no lo usas, puedes omitirlo, pero no está de más tenerlo. (esto es clave)
-
-// Este tengo que trabajarlo todavía:
-// static async findByRole(role) {
-//   try {
-//     const [rows] = await pool.query(
-//       `SELECT
-//         BIN_TO_UUID(u.id) as id,
-//         u.username,
-//         u.email,
-//         u.is_active,
-//         u.created_at,
-//         r.name as role
-//       FROM users u
-//       JOIN user_role ur ON u.id = ur.user_id
-//       JOIN roles r ON ur.role_id = r.id
-//       WHERE LOWER(r.name) = LOWER(?)`,
-//       [role]
-//     )
-
-//     return rows
-//   } catch (err) {
-//     throw new Error('Error al obtener usuarios por rol: ' + err.message)
-//   }
-// }
-
-// ---
-
-// ### ✏️ `update({ id, fields })`
-
-// * **Sí, lo necesitas.**
-// * Útil para actualizar:
-
-//   * `username`
-//   * `email`
-//   * `role`
-//   * `is_active`
-//   * etc.
-
-// **Forma flexible (recomendada):**
-
-// ```js
-// static async update(id, fields) {
-//   const updates = []
-//   const values = []
-
-//   for (const [key, value] of Object.entries(fields)) {
-//     updates.push(`${key} = ?`)
-//     values.push(value)
-//   }
-
-//   values.push(id)
-
-//   const sql = `UPDATE users SET ${updates.join(', ')} WHERE id = UUID_TO_BIN(?)`
-//   await pool.query(sql, values)
-// }
-// ```
-
-// Así puedes hacer:
-
-// ```js
-// await UserRepository.update(userId, { username: 'nuevoNombre', email: 'nuevo@mail.com' })
-// ```
-
-// ---
-
-// ### 🗑️ `delete(id)`
-
-// * **Sí, lo necesitas.**
-// * Borra un usuario por su `id`.
-// * Ojo: puedes hacer soft delete (marcar `is_active = 0`) en vez de eliminar de verdad, si prefieres.
-
-// Ejemplo básico:
-
-// ```js
-// static async delete(id) {
-//   await pool.query('DELETE FROM users WHERE id = UUID_TO_BIN(?)', [id])
-// }
-// ```
-
-// ---
-
-// ¿Quieres que te escriba el código completo para alguna de estas funciones (`login`, `findAll`, `update`, etc.) ahora?

@@ -1,7 +1,6 @@
 import express from 'express' // Importar la dependencia, la herramienta que vamos a usar
-import jwt from 'jsonwebtoken'
 import cookieParser from 'cookie-parser'
-import { PORT, SECRET_JWT_KEY } from './config/config.js' // Importar la configuración del puerto desde el archivo config.js. Esta manera es más moderna y permite usar variables de entorno fácilmente.
+import { PORT } from './config/config.js' // Importar la configuración del puerto desde el archivo config.js. Esta manera es más moderna y permite usar variables de entorno fácilmente.
 
 import { UserRepository } from './user-repository.js' // Importar el repositorio de usuarios
 import {
@@ -198,6 +197,50 @@ app.get('/users', authenticateToken, canDeleteUsers, async (req, res) => {
     res.status(200).json(users)
   } catch (error) {
     res.status(500).json({ error: 'Error al recuperar usuarios' })
+  }
+})
+
+// Obtener usuarios por rol (solo admin)
+// Esta ruta debe ir antes que la que tiene /users/:id para evitar conflictos de rutas
+app.get(
+  '/users/role/:role',
+  authenticateToken,
+  canDeleteUsers,
+  async (req, res) => {
+    try {
+      const users = await UserRepository.getByRole(req.params.role)
+      res.status(200).json(users)
+    } catch (error) {
+      res.status(500).json({ error: 'Error al obtener usuarios por rol' })
+    }
+  }
+)
+
+// Obtener usuario por ID (solo admin)
+app.get('/users/:id', authenticateToken, canDeleteUsers, async (req, res) => {
+  try {
+    const user = await UserRepository.getById(req.params.id)
+    if (!user) return res.status(404).json({ error: 'Usuario no encontrado' })
+    res.status(200).json(user)
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener usuario' })
+  }
+})
+
+// Actualizar usuario (solo admin)
+app.put('/users/:id', authenticateToken, canDeleteUsers, async (req, res) => {
+  try {
+    const { username, email, role } = req.body
+    const updatedUser = await UserRepository.update(req.params.id, {
+      username,
+      email,
+      role,
+    })
+    if (!updatedUser)
+      return res.status(404).json({ error: 'Usuario no encontrado' })
+    res.status(200).json(updatedUser)
+  } catch (error) {
+    res.status(500).json({ error: 'Error al actualizar usuario' })
   }
 })
 
