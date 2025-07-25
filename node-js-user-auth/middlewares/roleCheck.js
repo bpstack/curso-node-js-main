@@ -1,3 +1,4 @@
+// Este middleware verifica si el usuario tiene el rol adecuado para eliminar/modificar... usuarios.
 export function canDeleteUsers(req, res, next) {
   console.log('User en roleCheck:', req.user)
 

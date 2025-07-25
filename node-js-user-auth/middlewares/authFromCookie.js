@@ -1,5 +1,4 @@
-import jwt from 'jsonwebtoken'
-import { SECRET_JWT_KEY } from '../config/config.js'
+// Este middleware verifica si hay un token de acceso en las cookies y, si es válido, decodifica el usuario y lo agrega a req.user.
 import { verifyToken } from '../services/tokenService.js'
 
 export function authFromCookie(req, res, next) {

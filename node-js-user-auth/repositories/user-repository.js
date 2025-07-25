@@ -187,7 +187,7 @@ export class UserRepository {
           r.name AS role
         FROM users u
         LEFT JOIN user_role ur ON u.id = ur.user_id
-        LEFT JOIN roles r ON ur.role_id = r.id
+        LEFT JOIN roles r ON ur.role_id = r.id 
         WHERE u.username = ?
       `,
         [username]
@@ -241,7 +241,7 @@ export class UserRepository {
         [username, email, id]
       )
 
-      // Actualizar o insertar rol en user_role (cuando el rol es null, no se actualiza)
+      // Actualizar o insertar rol en user_role (cuando el rol es null, no se actualiza, hay que insertarlo)
       await dbConnection.query(
         `
         INSERT INTO user_role (user_id, role_id)

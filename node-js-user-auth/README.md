@@ -110,7 +110,7 @@ Comprueba:
 ### ✅ 6. **Mejoras opcionales**
 
 - Guardar fecha de último login
-- Bloquear usuarios (La funcionalidad de bloquear usuarios debe tener tanto la lógica en user-repository.js como una ruta en index.js para poder llamarla desde fuera (por ejemplo, desde un panel de administración)
+- Bloquear usuarios (La funcionalidad de bloquear usuarios debe tener tanto la lógica en user-repository.js como una ruta en index.js para poder llamarla desde fuera (por ejemplo, desde un panel de administración))
 - Refrescar tokens (refresh tokens)
 - Soporte para OAuth (Google, GitHub...) si es necesario
   Esto último es brutal si lo hago XD es una forma alternativa de autenticación, muy común hoy en día, que permite a los usuarios iniciar sesión usando una cuenta externa en lugar de registrarse manualmente con usuario y contraseña.

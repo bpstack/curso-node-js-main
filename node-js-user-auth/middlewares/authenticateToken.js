@@ -1,3 +1,4 @@
+// Este middleware verifica si hay un token de acceso en las cookies o en el encabezado Authorization, y si es válido, decodifica el usuario y lo agrega a req.user.
 import { verifyToken } from '../services/tokenService.js'
 
 export function authenticateToken(req, res, next) {

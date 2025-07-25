@@ -38,8 +38,8 @@ export const updateUser = async (req, res) => {
       role,
     })
     if (!updatedUser)
-      return res.status(404).json({ error: 'Usuario no encontrado' })
-    res.status(200).json(updatedUser)
+      return res.status(404).json({ error: 'Usuario no encontrado' }) // si no lo encontró, retorna 404
+    res.status(200).json(updatedUser) // Retorna el usuario actualizado si lo encontró
   } catch (error) {
     res.status(500).json({ error: 'Error al actualizar usuario' })
   }

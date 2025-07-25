@@ -67,10 +67,11 @@ export const register = async (req, res) => {
       .json({ errors: getValidationErrors(validationResult) })
   }
 
-  const { username, email, password, role } = req.body
+  const { username, email, password, role } = req.body // Asegúrate de que el rol sea uno permitido
 
   try {
     const user = await UserRepository.create({
+      // Crear usuario
       username,
       email,
       password,
@@ -79,12 +80,16 @@ export const register = async (req, res) => {
     res.status(201).json({ success: true, user })
   } catch (error) {
     if (
-      error.message.includes('duplicate') ||
+      error.message.includes('duplicate') || //
       error.message.includes('UNIQUE')
     ) {
       return res.status(409).json({ error: 'Username already exists' })
     }
-    console.error(error)
+    if (process.env.NODE_ENV !== 'production') {
+      // Solo mostrar detalles del error en desarrollo
+      console.error('Registration error:', error)
+      console.error(error)
+    }
     res.status(500).json({ error: 'Internal server error' })
   }
 }

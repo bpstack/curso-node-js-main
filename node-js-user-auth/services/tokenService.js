@@ -1,6 +1,6 @@
 // services/tokenService.js
-import jwt from 'jsonwebtoken'
-import { SECRET_JWT_KEY } from '../config/config.js'
+import jwt from 'jsonwebtoken' // Importamos jwt para manejar la creación y verificación de tokens
+import { SECRET_JWT_KEY } from '../config/config.js' // Importamos la clave secreta desde la configuración
 
 const ACCESS_TOKEN_EXPIRY = '8h'
 const REFRESH_TOKEN_EXPIRY = '7d'
