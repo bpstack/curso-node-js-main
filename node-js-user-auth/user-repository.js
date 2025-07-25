@@ -132,10 +132,31 @@ export class UserRepository {
     return userWithoutPassword
   }
 
-  static logout({ username }) {}
-  static findAll() {}
-  static findById(id) {}
-  static findByUsername(username) {}
+  static async getAll() {
+    try {
+      const [rows] = await pool.query(`
+      SELECT 
+        BIN_TO_UUID(u.id) as id,
+        u.username,
+        u.email,
+        u.created_at,
+        u.is_active,
+        r.name AS role
+      FROM users u
+      LEFT JOIN user_role ur ON u.id = ur.user_id
+      LEFT JOIN roles r ON ur.role_id = r.id
+    `)
+
+      return rows
+    } catch (error) {
+      console.error('Error al obtener usuarios:', error)
+      throw new Error('Error interno al obtener usuarios')
+    }
+  }
+
+  static getById(id) {}
+  static getByUsername(username) {}
+  static getByRole(role) {}
   static update() {}
 
   static async delete(id) {
@@ -166,21 +187,61 @@ export class UserRepository {
 
 //   * Un panel de administración.
 //   * Un dashboard para ver registros.
-// * Normalmente devuelves: `id`, `username`, `email`, `created_at`, `is_active` (sin password).
-// * Puedes incluir el `role` con un `JOIN`.
+// FIND ALL, absolutamente todos los datos. (no tenemos en el LEFT JOIN la tabla departamento porque aun no tengo claro como relacionarlo con la tabla users o con cualquier otra...)
+
+// static async findAll() {
+//   try {
+//     const [rows] = await pool.query(
+//       `SELECT
+//          BIN_TO_UUID(u.id) AS id,
+//          u.username,
+//          u.email,
+//          u.is_active,
+//          u.created_at,
+//          r.name AS role
+//        FROM users u
+//        LEFT JOIN user_role ur ON u.id = ur.user_id
+//        LEFT JOIN roles r ON ur.role_id = r.id`
+//     )
+
+//     return rows
+//   } catch (err) {
+//     throw new Error('Error al obtener todos los usuarios: ' + err.message)
+//   }
+// }
 
 // ---
 
 // ### 🔎 `findById(id)`
 
-// * **Sí es necesario.**
-// * Útil para:
+// * Ese método findById(id) te devuelve todos los datos principales del usuario, junto con su rol, gracias al JOIN que haces con las tablas user_role y roles
 
-//   * Obtener los detalles de un usuario específico.
-//   * Mostrar su perfil.
-// * Más seguro que usar `username` porque el `id` no cambia y es único.
+// static async findById(id) {
+//   try {
+//     const [rows] = await pool.query(
+//       `SELECT
+//         BIN_TO_UUID(u.id) as id,
+//         u.username,
+//         u.email,
+//         u.is_active,
+//         u.created_at,
+//         r.name as role
+//       FROM users u
+//       JOIN user_role ur ON u.id = ur.user_id
+//       JOIN roles r ON ur.role_id = r.id
+//       WHERE u.id = UUID_TO_BIN(?)`,
+//       [id]
+//     )
 
-// ---
+//     if (rows.length === 0) {
+//       throw new Error('Usuario no encontrado')
+//     }
+
+//     return rows[0]
+//   } catch (err) {
+//     throw new Error('Error al buscar usuario por ID: ' + err.message)
+//   }
+// }
 
 // ### 🔎 `findByUsername(username)`
 
@@ -190,6 +251,30 @@ export class UserRepository {
 //   * Búsqueda por parte de admins.
 //   * Sistemas donde el `username` es clave principal.
 // * Si no lo usas, puedes omitirlo, pero no está de más tenerlo. (esto es clave)
+
+// Este tengo que trabajarlo todavía:
+// static async findByRole(role) {
+//   try {
+//     const [rows] = await pool.query(
+//       `SELECT
+//         BIN_TO_UUID(u.id) as id,
+//         u.username,
+//         u.email,
+//         u.is_active,
+//         u.created_at,
+//         r.name as role
+//       FROM users u
+//       JOIN user_role ur ON u.id = ur.user_id
+//       JOIN roles r ON ur.role_id = r.id
+//       WHERE LOWER(r.name) = LOWER(?)`,
+//       [role]
+//     )
+
+//     return rows
+//   } catch (err) {
+//     throw new Error('Error al obtener usuarios por rol: ' + err.message)
+//   }
+// }
 
 // ---
 

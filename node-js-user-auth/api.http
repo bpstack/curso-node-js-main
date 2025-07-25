@@ -24,3 +24,8 @@ Content-Type: application/json
 DELETE http://localhost:3000/users/da708205-6549-11f0-9104-d8bbc147dfea
 
 Authorization: Bearer TOKEN AQUI
+
+### Obtener todos los usuarios (solo si estás autenticado como manager)
+GET http://localhost:3000/users
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwicm9sZSI6IkdlbmVyYWwgTWFuYWdlciIsImlhdCI6MTc1MzQwMTE1NiwiZXhwIjoxNzUzNDI5OTU2fQ.sclWqNMMyM0lALz7K3FkpMWtJN-Ry5s0RFYmz9RwU0U
+

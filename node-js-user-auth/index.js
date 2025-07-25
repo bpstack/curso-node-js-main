@@ -9,9 +9,16 @@ import {
   getValidationErrors,
 } from './validations/user-validation.js'
 
+//Middlewares
 import { canDeleteUsers } from './middlewares/roleCheck.js'
 import { authenticateToken } from './middlewares/authenticateToken.js'
 import { authFromCookie } from './middlewares/authFromCookie.js'
+
+//services/tokenService.js
+import {
+  generateAccessToken,
+  generateRefreshToken,
+} from './services/tokenService.js'
 
 const app = express() // crear la aplicación, una instancia de express
 app.disable('x-powered-by')
@@ -51,18 +58,27 @@ app.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' })
     }
 
-    // 3. Crear token JWT
-    const token = jwt.sign(
-      { id: user._id, username: user.username, role: user.role },
-      SECRET_JWT_KEY,
-      { expiresIn: '8h' }
-    )
+    // 3. token service
+    const accessToken = generateAccessToken({
+      id: user._id,
+      username: user.username,
+      role: user.role,
+    })
+    // refresh token, generarlo también
+    const refreshToken = generateRefreshToken({ id: user._id })
+
     // 4. Guardar el token en cookie
-    res.cookie('access_token', token, {
+    res.cookie('access_token', accessToken, {
       httpOnly: true, // Hace que la cookie sólo se pueda acceder desde el servidor, es decir, NO sea accesible desde JavaScript del lado del cliente
       secure: process.env.NODE_ENV === 'production', // sólo en https en producción
       sameSite: 'Strict', // Sólo desde el mismo sitio, mismo dominio, para evitar ataques CSRF
       maxAge: 8 * 60 * 60 * 1000, // 8 horas en milisegundos
+    })
+    res.cookie('refresh_token', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'Strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 días
     })
 
     // 4. Eliminar la contraseña del objeto usuario
@@ -72,11 +88,44 @@ app.post('/login', async (req, res) => {
     return res.status(200).json({
       success: true,
       user: userWithoutPassword,
-      token,
+      token: accessToken,
+      // refreshToken, // Si usas refresh token, puedes devolverlo aquí también
     })
   } catch (error) {
     console.error('Login error:', error)
     return res.status(500).json({ error: 'Internal server error' })
+  }
+})
+
+app.post('/refresh-token', (req, res) => {
+  const refreshToken = req.cookies.refresh_token
+
+  if (!refreshToken) {
+    return res.status(401).json({ error: 'Refresh token no proporcionado' })
+  }
+
+  try {
+    const payload = verifyToken(refreshToken) // función de tokenService.js
+
+    // Opcional: verifica que el usuario aún exista en la base de datos, etc.
+
+    // Generar un nuevo access token
+    const newAccessToken = generateAccessToken({
+      id: payload.id,
+      // Aquí podrías obtener más info del usuario si quieres (por ejemplo rol)
+    })
+
+    // Actualizar cookie de access token
+    res.cookie('access_token', newAccessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'Strict',
+      maxAge: 8 * 60 * 60 * 1000, // 8 horas
+    })
+
+    return res.status(200).json({ success: true, token: newAccessToken })
+  } catch (error) {
+    return res.status(403).json({ error: 'Refresh token inválido o expirado' })
   }
 })
 
@@ -126,18 +175,29 @@ app.post('/register', async (req, res) => {
 })
 
 app.post('/logout', (req, res) => {
-  res.clearCookie('access_token')
-  //jsontatus(200).json({ message: 'Logged out successfully' }) // Responder con éxito, indicando que se ha cerrado sesión (solo se puede hacer una respuesta por petición)
-  // También podrías redirigir a la página de inicio o login
-  res.redirect('/')
+  res.clearCookie('access_token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'Strict',
+  })
+
+  res.clearCookie('refresh_token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'Strict',
+  })
+
+  // Puedes devolver un mensaje o redirigir, como prefieras:
+  return res.status(200).json({ message: 'Sesión cerrada correctamente' })
+  // o: res.redirect('/')
 })
 
-app.get('/users', async (req, res) => {
+app.get('/users', authenticateToken, canDeleteUsers, async (req, res) => {
   try {
     const users = await UserRepository.getAll()
     res.status(200).json(users)
   } catch (error) {
-    res.status(500).json({ error: 'Error al recuperar users' })
+    res.status(500).json({ error: 'Error al recuperar usuarios' })
   }
 })
 

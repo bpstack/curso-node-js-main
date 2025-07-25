@@ -1,5 +1,4 @@
-import jwt from 'jsonwebtoken'
-import { SECRET_JWT_KEY } from '../config/config.js'
+import { verifyToken } from '../services/tokenService.js'
 
 export function authenticateToken(req, res, next) {
   const token =
@@ -9,14 +8,11 @@ export function authenticateToken(req, res, next) {
     return res.status(401).json({ error: 'Token no proporcionado' })
   }
 
-  jwt.verify(token, SECRET_JWT_KEY, (err, decoded) => {
-    if (err) {
-      return res.status(403).json({ error: 'Token inválido o expirado' })
-    }
-
-    console.log('Token decodificado:', decoded) // <-- Aquí ves qué trae el token
-
+  try {
+    const decoded = verifyToken(token)
     req.user = decoded
     next()
-  })
+  } catch (error) {
+    return res.status(403).json({ error: 'Token inválido o expirado' })
+  }
 }
