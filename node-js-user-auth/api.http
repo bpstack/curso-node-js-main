@@ -3,7 +3,7 @@
 // 1. Autenticación y Registro
 
 ### Login (obtener tokens)
-POST http://localhost:3000/login
+POST http://localhost:3000/auth/login
 Content-Type: application/json
 
 {
@@ -12,7 +12,7 @@ Content-Type: application/json
 }
 
 ### Registro de nuevo usuario con rol (solo admin puede hacer esto idealmente)
-POST http://localhost:3000/register
+POST http://localhost:3000/auth/register
 Content-Type: application/json
 
 {

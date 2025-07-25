@@ -1,10 +1,12 @@
-import { Validation } from './validations/user-validation.js'
+// node-js-user-auth/repositories/user-repository.js
+
+import { Validation } from '../validations/user-validation.js'
 
 import mysql from 'mysql2/promise'
 import dotenv from 'dotenv'
 
 import bcrypt from 'bcrypt' // Importar bcrypt para hashear contraseñas
-import { SALT_ROUNDS } from './config/config.js' // Importar el número de rondas de sal desde la configuración
+import { SALT_ROUNDS } from '../config/config.js' // Importar el número de rondas de sal desde la configuración
 dotenv.config()
 
 const pool = mysql.createPool({
